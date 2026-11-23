@@ -1,0 +1,23 @@
+# ArgoCD Application for the RAG API.
+# Create the repo URL first (see README): the manifests live in this
+# same repository under k8s/api/.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rag-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/venkateswarlu429/rag-platform-kubernetes.git
+    targetRevision: HEAD
+    path: k8s/api
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rag
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,23 @@
+# ArgoCD Application for Qdrant (the vector database).
+# Sync this one BEFORE rag-api: the API's startup calls
+# ensure_collection() against Qdrant, so Qdrant must be up first.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rag-qdrant
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/venkateswarlu429/rag-platform-kubernetes.git
+    targetRevision: HEAD
+    path: k8s/qdrant
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rag
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

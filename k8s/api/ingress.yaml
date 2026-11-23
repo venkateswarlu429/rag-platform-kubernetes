@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rag-api
+  namespace: rag
+  labels:
+    app.kubernetes.io/name: rag-platform
+    app.kubernetes.io/component: api
+  annotations:
+    # Adjust to your ingress controller (this example assumes nginx).
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: rag.example.com # <-- change to your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rag-api
+                port:
+                  number: 80

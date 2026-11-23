@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: qdrant
+  namespace: rag
+  labels:
+    app.kubernetes.io/name: rag-platform
+    app.kubernetes.io/component: qdrant
+spec:
+  serviceName: qdrant
+  replicas: 1 # single-node for this project; Qdrant clustering is out of scope
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rag-platform
+      app.kubernetes.io/component: qdrant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rag-platform
+        app.kubernetes.io/component: qdrant
+    spec:
+      containers:
+        - name: qdrant
+          image: qdrant/qdrant:v1.11.0
+          ports:
+            - containerPort: 6333
+              name: http
+            - containerPort: 6334
+              name: grpc
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /qdrant/storage
+          livenessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: rag
+  labels:
+    app.kubernetes.io/name: rag-platform
+    app.kubernetes.io/component: qdrant
+spec:
+  type: ClusterIP
+  clusterIP: None # headless service for the StatefulSet
+  selector:
+    app.kubernetes.io/name: rag-platform
+    app.kubernetes.io/component: qdrant
+  ports:
+    - port: 6333
+      targetPort: http
+      name: http
+    - port: 6334
+      targetPort: grpc
+      name: grpc

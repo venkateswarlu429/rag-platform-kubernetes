@@ -1,0 +1,28 @@
+# API ConfigMap — non-secret configuration for the RAG API.
+# Secrets (EMBEDDING_API_KEY / LLM_API_KEY) live in a Secret named
+# `rag-api-secrets` that you create separately, e.g.:
+#   kubectl -n rag create secret generic rag-api-secrets \
+#     --from-literal=EMBEDDING_API_KEY='...' \
+#     --from-literal=LLM_API_KEY='...'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-api-config
+  namespace: rag
+  labels:
+    app.kubernetes.io/name: rag-platform
+    app.kubernetes.io/component: api
+data:
+  VECTOR_STORE: "qdrant"
+  QDRANT_URL: "http://qdrant.rag.svc.cluster.local:6333"
+  QDRANT_COLLECTION: "rag_docs"
+  # Point these at your OpenAI-compatible provider. Leave the base URLs
+  # empty to run with the deterministic fake clients (offline mode).
+  EMBEDDING_BASE_URL: ""
+  EMBEDDING_MODEL: "text-embedding-3-small"
+  EMBEDDING_DIMENSIONS: "1536"
+  LLM_BASE_URL: ""
+  LLM_MODEL: "gpt-4o-mini"
+  CHUNK_WORDS: "100"
+  CHUNK_OVERLAP_WORDS: "20"
+  DEFAULT_TOP_K: "4"
